@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/axios';
+import { getCurrentUser, login as apiLogin, register as apiRegister } from '../services/api';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fetchUser = async () => {
       if (token) {
         try {
-          const response = await api.get('/auth/me');
-          setUser(response.data);
+          const userData = await getCurrentUser();
+          setUser(userData);
         } catch (error) {
           console.error('Failed to fetch user', error);
           logout();
@@ -36,19 +36,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
-    const { token } = response.data;
-    localStorage.setItem('token', token);
-    setToken(token);
-    navigate('/');
+    try {
+      const response = await apiLogin(email, password);
+      const newToken = response.token; // Changed from Token to token (lowercase)
+      console.log('Login successful, token:', newToken);
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      
+      // Fetch user data immediately after setting token
+      try {
+        console.log('Attempting to fetch user with token:', newToken);
+        // Pass token directly to avoid timing issues with state updates
+        const userData = await getCurrentUser(newToken);
+        console.log('User data fetched successfully:', userData);
+        setUser(userData);
+      } catch (error: any) {
+        console.error('Failed to fetch user after login. Error status:', error?.response?.status);
+        console.error('Full error:', error);
+        throw new Error(`Failed to fetch user data: ${error?.response?.status || error?.message}`);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const register = async (email: string, password: string, fullName: string, role: string) => {
-    const response = await api.post('/auth/register', { email, password, fullName, role });
-    const { token } = response.data;
-    localStorage.setItem('token', token);
-    setToken(token);
-    navigate('/');
+    try {
+      const response = await apiRegister(email, password, fullName, role);
+      const newToken = response.token; // Changed from Token to token (lowercase)
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   const logout = () => {
