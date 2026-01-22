@@ -1,24 +1,8 @@
-// src/types/index.ts
-
 export interface User {
   id: number;
   email: string;
   fullName: string;
-  role: 'Customer' | 'Owner' | 'Admin';
-}
-
-export interface Shop {
-  id: number;
-  name: string;
-  description: string;
-  location: string;
-  openingHours: string;
-  categoryId: number;
-  // New fields required by the new code
-  categoryName?: string; 
-  logoUrl?: string;
-  bannerUrl?: string;
-  rating?: number;
+  role: string; // 'Customer' | 'Owner' | 'Employee'
 }
 
 export interface Category {
@@ -26,26 +10,42 @@ export interface Category {
   name: string;
 }
 
+export interface Shop {
+  id: number;
+  ownerId: number;
+  ownerName: string;
+  categoryId: number;
+  categoryName: string;
+  name: string;
+  description: string;
+  location: string;
+  openingHours: string;
+  // Advanced fields
+  bannerUrl?: string;
+  logoUrl?: string;
+  rating?: number;
+}
+
 export interface Appointment {
   id: number;
   shopId: number;
+  shopName: string;
   customerId: number;
-  customerName?: string; // Optional for dashboard display
+  customerName: string;
   startAt: string;
   endAt: string;
-  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
-  notes?: string;
+  status: string;
+  notes: string;
 }
 
-// New Interfaces required by the new code
 export interface Product {
   id: number;
   shopId: number;
   name: string;
-  description: string;
   price: number;
-  stock: number;
+  description: string;
   imageUrl: string;
+  stock: number;
 }
 
 export interface ChatMessage {

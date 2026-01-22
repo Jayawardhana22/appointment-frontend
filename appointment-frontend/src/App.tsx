@@ -1,38 +1,38 @@
 import { Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Shops from './pages/Shops';
-import ShopDetail from './pages/ShopDetail';
 import Dashboard from './pages/Dashboard';
-import CreateShop from './pages/CreateShop';
-
-const queryClient = new QueryClient();
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/shops" element={<Shops />} />
-            <Route path="/shops/:id" element={<ShopDetail />} />
+    <Routes>
+      {/* --- PUBLIC PAGES WITH NO NAVBAR --- */}
+      {/* These are outside the Layout route, so they won't show the nav/footer */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-            <Route element={<ProtectedRoute allowedRoles={['Owner']} />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/create-shop" element={<CreateShop />} />
-            </Route>
-          </Routes>
-        </Layout>
-      </AuthProvider>
-    </QueryClientProvider>
+      {/* --- PAGES WITH NAVBAR & FOOTER --- */}
+      <Route element={<Layout />}>
+        {/* This is the landing page visitors see first */}
+        <Route path="/" element={<Home />} /> 
+        
+        <Route path="/shops" element={<Shops />} />
+        
+        {/* --- PROTECTED BUSINESS OWNER PAGES --- */}
+        <Route element={<ProtectedRoute allowedRoles={['Owner']} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        {/* --- PROTECTED CUSTOMER PAGES --- */}
+        <Route element={<ProtectedRoute allowedRoles={['Customer', 'Owner']} />}>
+          <Route path="/my-appointments" element={<div>My Appointments</div>} />
+        </Route>
+      </Route>
+    </Routes>
   );
 }
 
